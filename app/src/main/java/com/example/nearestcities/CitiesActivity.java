@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -56,13 +57,15 @@ public class CitiesActivity extends AppCompatActivity {
                 if(!c.name.equals(cityName)) {
                     float[] distRes = new float[3];
                     Location.distanceBetween(city.coord.lat, city.coord.lon, c.coord.lat, c.coord.lon, distRes);
-                    if(distRes[0] < maxDistance) {
+                    if(distRes[0] <= maxDistance) {
                         c.distance = distRes[0];
                         result.add(c);
                     }
                 }
 
             }
+            TextView near = this.findViewById(R.id.nearest);
+            near.setText(String.format("Cities within a %.0f km radius", maxDistance/1000));
             Collections.reverse(result);
             recyclerView = findViewById(R.id.recList);
             CityAdapter adapter = new CityAdapter(this, result, cityName);

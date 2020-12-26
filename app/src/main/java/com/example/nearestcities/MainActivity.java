@@ -2,6 +2,7 @@ package com.example.nearestcities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,9 @@ import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
     City[] cities;
+    Context context;
+    ArrayAdapter<String> adapter;
+    Spinner spinner;
     public void search(View view)
     {
         String cityName = ((Spinner) this.findViewById(R.id.cities)).getSelectedItem().toString();
@@ -38,25 +42,47 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    class MyThread extends Thread {
+        MyThread(String name){
+            super(name);
+        }
+
+        public void run(){
+            InputStream is = getResources().openRawResource(R.raw.cities);
+            Scanner scanner = new Scanner(is, StandardCharsets.UTF_8.name());
+            String jstring = scanner.useDelimiter("\\A").next();
+            Gson gson = new Gson();
+            cities = gson.fromJson(jstring, City[].class);
+            List<String> nameList = new ArrayList<String>();
+            for(City city: cities) {
+                //Log.d("myTag", String.valueOf(city.country == "RU"));
+                if(city.country.equals("RU")) nameList.add(city.name);
+            }
+            Collections.reverse(nameList);
+            adapter = new ArrayAdapter<String>(context,
+                    android.R.layout.simple_list_item_1, nameList);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        InputStream is = getResources().openRawResource(R.raw.cities);
-        Scanner scanner = new Scanner(is, StandardCharsets.UTF_8.name());
-        String jstring = scanner.useDelimiter("\\A").next();
-        Gson gson = new Gson();
-        cities = gson.fromJson(jstring, City[].class);
-        Spinner spinner = findViewById(R.id.cities);
-        List<String> nameList = new ArrayList<String>();
-        for(City city: cities) {
-            //Log.d("myTag", String.valueOf(city.country == "RU"));
-            if(city.country.equals("RU")) nameList.add(city.name);
-        }
-        Collections.reverse(nameList);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, nameList);
-        spinner.setAdapter(adapter);
+        context = this;
+        spinner = findViewById(R.id.cities);
+        final MyThread myThread = new MyThread("MyThread");
+        myThread.start();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                spinner.setAdapter(adapter);
+            }
+        });
 
     }
 }

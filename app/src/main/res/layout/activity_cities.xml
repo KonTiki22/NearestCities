@@ -14,12 +14,14 @@
         android:onClick="back"
         android:textColor="#FFFFFF" />
     <TextView
-        android:id="@+id/library"
+        android:id="@+id/nearest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="Find cities"
         android:gravity="center"
-        android:layout_marginBottom="10dp"
-        android:textSize="19dp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
+        android:textSize="22dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recList"
